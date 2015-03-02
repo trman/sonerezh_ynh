@@ -1,0 +1,32 @@
+{
+    "name": "Sonerezh",
+    "id": "sonerezh",
+    "description": {
+        "en": "A self-hosted, web-based application for stream your music, everywhere.",
+        "fr": "Une application web pour écouter en streaming sa musique partout."
+    },
+    "license": "GPL-3",
+    "developer": {
+        "name": "rodinux",
+        "email": "rodinux@rodinux.fr",
+    },
+    "multi_instance": "true",
+    "arguments": {
+        "install" : [
+            {
+                "name": "domain",
+                "ask": {
+                    "en": "Choose a domain for Sonerezh"
+                },
+            },
+            {
+                "name": "path",
+                "ask": {
+                    "en": "Choose a path for Sonerezh"
+                },
+                "example": "/sonerezh",
+                "default": "/sonerezh"
+            }
+        ]
+    }
+}
