@@ -5,7 +5,7 @@
         "en": "A self-hosted, web-based application for stream your music, everywhere.",
         "fr": "Une application web pour écouter en streaming sa musique partout."
     },
-    "license": "GPL-3",
+    "license": "GNU AGPL-v3",
     "developer": {
         "name": "rodinux",
         "email": "rodinux@rodinux.fr",
