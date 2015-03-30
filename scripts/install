@@ -19,7 +19,7 @@ db_user=sonerezh
 sudo yunohost app initdb $db_user -p $db_pwd -s $(readlink -e ../sources/SQL/mysql.initial.sql)
 sudo yunohost app setting sonerezh mysqlpwd -v $db_pwd
 
- # Create owncloud user
+ # Create sonerezh user
 sudo useradd -d /var/www/sonerezh sonerezh
 
 # Copy files to the right place
@@ -37,7 +37,7 @@ sudo chown -hR sonerezh:www-data $final_path
 sudo chmod -hR 775 $final_path
 
 
-# Set permissions to roundcube directory
+# Set permissions to sonerezh directory
 sudo chown -R www-data: $final_path
 
 # Modify Nginx configuration file and copy it to Nginx conf directory
