@@ -1,2 +1,2 @@
-# sonerezh_ynh
-Sorenezh Package for YunoHost
+# Sonerezh package for YunoHost
+Sorenezh package for YunoHost
