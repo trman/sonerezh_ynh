@@ -7,7 +7,13 @@ $(function(){
 
     function loadPage(url, pushState, method, data) {
         Pace.restart();
-        if(url.indexOf("?ajax=true") == -1)url = url + "?ajax=true";
+        if(url.indexOf("ajax=true") == -1){
+            if(url.indexOf("?") == -1){
+                url = url + "?ajax=true";
+            }else{
+                url = url + "&ajax=true";
+            }
+        }
         if(pushState === undefined)pushState = true;
         if(method === undefined)method = "GET";
         if(data === undefined)data = null;
@@ -22,10 +28,10 @@ $(function(){
                 $('body').removeClass('modal-open');
 
                 if(pushState){
-                    history.pushState(null, null, response[1].url);
+                    history.pushState({url: response[1].url}, null, response[1].url);
                 }
 
-                if(player.paused() && response[2].html.length){
+                if(!player.isPlaying() && response[2].html.length){
                     $('title').text(response[1].title);
                 }
                 $('head').append(response[0].css);
@@ -37,7 +43,7 @@ $(function(){
                     $(document).scrollTop(0);
                     $('#content').html(response[2].html);
                 }else{
-                    history.replaceState(null, null, referrer);
+                    history.replaceState({url: response[1].url}, null, referrer);
                     response[1].url = referrer;
                 }
                 referrer = response[1].url;
@@ -96,9 +102,14 @@ $(function(){
         loadPage(url, true, method, data);
     });
 
-    window.onpopstate = function(){
-        loadPage(window.location.href, false);
+    window.onpopstate = function(e){
+        if(e.state != null) {
+            loadPage(window.location.href, false);
+        }else {
+            history.replaceState({url: window.location.href}, null, window.location.href);
+        }
     };
+    history.replaceState({url: window.location.href}, null, window.location.href);
 
 
     $("#content").on('show.bs.modal', '#add-to', function(event){

@@ -1,3 +1,20 @@
+<?php echo $this->start('script'); ?>
+<script>
+    $(function() {
+        $('#DBDatasource').selecter({
+            label: "<?php echo __('Select a database type'); ?>"
+        });
+        $('#DBDatasource').change(function() {
+            if ($(this).val() == "Database/Sqlite") {
+                $('.sqlite-optional').hide().find('input').removeAttr('required');
+            } else {
+                $('.sqlite-optional').show().find('input:not(#DBPrefix)').attr('required', 'required');
+            }
+        }).change();
+    });
+</script>
+<?php echo $this->end(); ?>
+
 <div class="col-xs-12" style="margin-bottom: 20px;">
     <div class="page-header">
         <h1><?php echo __('Sonerezh'); ?></h1>
@@ -8,55 +25,20 @@
 
     <h2><?php echo __('Requirements'); ?></h2>
     <hr />
-    <!-- Check for PHP-GD -->
-    <?php if ($gd): ?>
-        <div class="alert alert-success">
-            <?php echo __('PHP GD is installed!'); ?>
-        </div>
-    <?php else: ?>
-        <div class="alert alert-danger">
-            <?php echo __('PHP GD is missing.'); ?>
-        </div>
-    <?php endif; ?>
 
-    <!-- Check for lib-avtools -->
-    <?php if ($libavtools): ?>
-        <div class="alert alert-success">
-            <?php echo __('libav-tools (avconv) is installed!'); ?>
+    <?php foreach ($requirements as $requirement): ?>
+        <div class="alert alert-<?php echo $requirement['label']; ?>">
+            <?php echo $requirement['message']; ?>
         </div>
-    <?php else: ?>
-        <div class="alert alert-warning">
-            <?php echo __('libav-tools (avconv) is missing. Sonerezh will not be able to convert your tracks.'); ?>
-        </div>
-    <?php endif; ?>
+    <?php endforeach; ?>
 
-    <!-- Check if APP/Config is writable -->
-    <?php if ($is_config_writable): ?>
-        <div class="alert alert-success">
-            <?php echo __('I can write the configuration in '.APP.'Config'); ?>
-        </div>
-    <?php else: ?>
-        <div class="alert alert-danger">
-            <?php echo __('I cannot write the configuration in '.APP.'Config. Please verify access rights on that folder.'); ?>
-        </div>
-    <?php endif; ?>
-
-    <!-- Check if APP/Config/core is writable -->
-    <?php if ($is_core_writable): ?>
-        <div class="alert alert-success">
-            <?php echo __('I can write in the core configuration file ('.APP.'Config'.DS.'core.php)'); ?>
-        </div>
-    <?php else: ?>
-        <div class="alert alert-danger">
-            <?php echo __('I cannot write in the core configuration file ('.APP.'Config'.DS.'core.php). Please verify access rights on that file.'); ?>
-        </div>
-    <?php endif; ?>
+    <?php if (!$missing_requirements): ?>
 
     <h2><?php echo __('Database configuration'); ?></h2>
     <hr />
 
     <p>
-        <?php echo __("Please provide the following information to allow Sonerezh to access to its MySQL database."); ?> <span class="text-danger"><?php echo __('Note that if you are reinstalling Sonerezh, all your previous data will be lost.') ?></span>
+        <?php echo __("Please provide the following information to allow Sonerezh to access its database."); ?> <span class="text-danger"><?php echo __('Note that if you are reinstalling Sonerezh, all your previous data will be lost.') ?></span>
     </p>
 
 
@@ -74,12 +56,27 @@
 
     <div class="col-xs-8 col-xs-offset-2">
         <?php
-        echo $this->Form->input('DB.host', array('placeholder' => __('Database host (generally localhost)')));
-        echo $this->Form->input('DB.database', array('placeholder' => __('Database name')));
-        echo $this->Form->input('DB.login', array('placeholder' => __('Database user login')));
-        echo $this->Form->input('DB.password', array('placeholder' => __('Database user password')));
-        echo $this->Form->input('DB.prefix', array('placeholder' => __('Leave empty if none'), 'label' => array('text' => __('Prefix (optionnal)'), 'class' => 'col-sm-3 control-label')));
+        echo $this->Form->input('DB.datasource', array(
+            'options'   => $available_drivers,
+            'label'     => array('text' => __('Database type'), 'class' => 'col-sm-3 control-label', 'style' => 'padding-top: 20px;'),
+            'required'
+        ));
         ?>
+        <div class="sqlite-optional">
+            <?php
+            echo $this->Form->input('DB.host', array('placeholder' => __('You can specify a non standard port if needed (127.0.0.1:1234)'), 'required'));
+            ?>
+        </div>
+        <?php
+        echo $this->Form->input('DB.database', array('placeholder' => __('Database name'), 'required'));
+        ?>
+        <div class="sqlite-optional">
+            <?php
+            echo $this->Form->input('DB.login', array('placeholder' => __('Database user login'), 'required'));
+            echo $this->Form->input('DB.password', array('placeholder' => __('Database user password'), 'required'));
+            echo $this->Form->input('DB.prefix', array('placeholder' => __('Leave empty if none'), 'label' => array('text' => __('Prefix (optional)'), 'class' => 'col-sm-3 control-label')));
+            ?>
+        </div>
     </div>
 
     <div class="clearfix"></div>
@@ -95,19 +92,14 @@
     <div class="col-xs-8 col-xs-offset-2">
 
         <?php
-        echo $this->Form->input('User.email', array('placeholder' => 'john.doe@sonerezh.bzh'));
-        echo $this->Form->input('User.password', array('placeholder' => __('Password'), 'label' => array('text' => __('Password (twice)'), 'class' => 'col-sm-3 control-label')));
-        echo $this->Form->input('User.password_confirmation', array('placeholder' => __('Confirm your password'), 'type' => 'password', 'label' => array('text' => '', 'class' => 'col-sm-3 control-label')));
-        echo $this->Form->input('Setting.rootpath', array('placeholder' => '/home/jdoe/Music', 'label' => array('text' => 'Music folder', 'class' => 'col-sm-3 control-label')));
-
-        if ($gd && $is_config_writable && $is_core_writable) {
-            echo $this->Form->submit('Run!', array('class' => 'btn btn-success pull-right'));
-        } else {
-            echo '<button class="btn btn-danger pull-right" disabled>'.__('Missing requirements').'</button>';
-        }
-
+        echo $this->Form->input('User.email', array('placeholder' => 'john.doe@sonerezh.bzh', 'required'));
+        echo $this->Form->input('User.password', array('placeholder' => __('Password'), 'label' => array('text' => __('Password (twice)'), 'class' => 'col-sm-3 control-label'), 'required'));
+        echo $this->Form->input('User.confirm_password', array('placeholder' => __('Confirm your password'), 'type' => 'password', 'label' => array('text' => '', 'class' => 'col-sm-3 control-label'), 'required'));
+        echo $this->Form->input('Setting.Rootpath.0.rootpath', array('placeholder' => '/home/jdoe/Music', 'label' => array('text' => 'Music folder', 'class' => 'col-sm-3 control-label'), 'after' => '<small><span class="help-block"><i class="glyphicon glyphicon-info-sign"></i> Current App folder is: '.APP.'</span></small>'));
+        echo $this->Form->submit('Run!', array('class' => 'btn btn-success pull-right'));
         ?>
     </div>
 
     <?php echo $this->Form->end(); ?>
+    <?php endif; ?>
 </div>

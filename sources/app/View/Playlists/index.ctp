@@ -1,5 +1,25 @@
+<?php $this->start('script'); ?>
+    <script>
+        function syncPlaylist() {
+            var songs = [];
+            var length = $('.playlist-row [data-id]').length;
+            $('.playlist-row [data-id]').each(function(index, element) {
+                songs.push(songsManager.getSong($(element).attr('data-id')));
+                if (songs.length == length) {
+                    songsManager.setPlaylist(songs);
+                }
+            });
+        }
+        if (songsManager.isOpen()) {
+            syncPlaylist();
+        } else {
+            songsManager.addOnDBReadyListener(syncPlaylist);
+        }
+    </script>
+<?php $this->end(); ?>
+
 <div class="col-xs-3">
-    <div class="panel panel-default" style="margin-top: 20px;">
+    <div class="panel panel-default" data-view="playlists" style="margin-top: 20px;">
         <div class="panel-heading">
             <h4 class="panel-title"><?php echo __('Playlists'); ?></h4>
             <?php echo $this->Html->link(
@@ -14,10 +34,10 @@
             ); ?>
         </div>
         <ul class="list-group">
-            <?php if(empty($playlists)): ?>
+            <?php if (empty($playlists)): ?>
             <li class="list-group-item">&nbsp;</li>
             <?php endif; ?>
-            <?php foreach($playlists as $id =>$p): ?>
+            <?php foreach ($playlists as $id =>$p): ?>
             <li class="list-group-item ">
                 <small><i class="glyphicon glyphicon-list"></i></small>&nbsp;
                 <?php echo $this->Html->link(
@@ -47,42 +67,42 @@
     </div>
 </div>
 <div class="col-xs-9" style="padding-top: 20px;">
-    <?php if(empty($playlists)): ?>
+    <?php if (empty($playlists)): ?>
         <div class="alert alert-info">
             <?php echo __("You don't have playlists yet."); ?>
         </div>
     <?php else: ?>
-        <div class="row playlist-row" data-playlist="<?php echo $playlistInfo['id'];?>">
+        <div class="row playlist-row" data-playlist="<?php echo $playlistInfo['id']; ?>">
             <div class="col-xs-10">
                 <h4>
-                    <?php echo $playlistInfo['name']; ?>
+                    <?php echo h($playlistInfo['name']); ?>
                 </h4>
             </div>
             <div class="col-xs-2">
                 <h4 class="text-right">
                     <small>
-                        <span class="glyphicon glyphicon-play song-controls action-play-playlist" title="<?= ('Play all albums'); ?>"></span>
-                        <span class="glyphicon glyphicon-random song-controls action-shuffle-playlist" title="<?= ('Shuffle this artist'); ?>"></span>
+                        <span class="glyphicon glyphicon-play song-controls action-play-playlist" title="<?php echo __('Play the playlist'); ?>"></span>
+                        <span class="glyphicon glyphicon-random song-controls action-shuffle-playlist" title="<?php echo __('Shuffle this playlist'); ?>"></span>
                         <span class="dropdown">
-                        <span class="glyphicon glyphicon-plus song-controls" data-toggle="dropdown" title="<?= ('Add to playlist'); ?>"></span>
+                        <span class="glyphicon glyphicon-plus song-controls" data-toggle="dropdown" title="<?php echo __('Other actions'); ?>"></span>
                             <ul class="dropdown-menu" role="menu" aria-labelledby="dropdownAlbum">
-                                <li role="presentation"><a role="menuitem" tabindex="-1" href="#" class="action-playlist-play-next"><?= __('Play Next'); ?></a></li>
-                                <li role="presentation"><a role="menuitem" tabindex="-1" href="#" class="action-add-playlist-to-up-next"><?= __('Add to Up Next'); ?></a></li>
+                                <li role="presentation"><a role="menuitem" tabindex="-1" href="#" class="action-playlist-play-next"><?php echo __('Play Next'); ?></a></li>
+                                <li role="presentation"><a role="menuitem" tabindex="-1" href="#" class="action-add-playlist-to-up-next"><?php echo __('Add to Up Next'); ?></a></li>
                             </ul>
                         </span>
                     </small>
                 </h4>
             </div>
             <hr style="clear: both;"/>
-            <?php if(empty($playlist)): ?>
+            <?php if (empty($playlist)): ?>
                 <div class="alert alert-info">
                     <?php echo __("This playlist is empty :("); ?>
                 </div>
             <?php else: ?>
-                <table class="table table-striped table-condensed table-hover" data-scroll-container="true" style="margin-top: 20px;">
+                <table class="table table-hover" data-scroll-container="true" style="margin-top: 20px;">
                     <thead>
                     <tr>
-                        <th>#</th>
+                        <th class="track-number">#</th>
                         <th><?php echo __('Song Title'); ?></th>
                         <th class="hidden-xs hidden-sm"><?php echo __('Artist'); ?></th>
                         <th class="visible-lg"><?php echo __('Album'); ?></th>
@@ -90,22 +110,22 @@
                     </tr>
                     </thead>
                     <tbody>
-                    <?php foreach($playlist as $song): ?>
-                        <tr data-id="<?php echo $song['Song']['id']; ?>" data-scroll-content="true">
+                    <?php foreach ($playlist as $song): ?>
+                        <tr data-id="<?php echo h($song['Song']['id']); ?>" data-scroll-content="true">
                             <td class="track-number">
-                                <span class="song-number"><?php echo $song['PlaylistMembership']['sort']; ?></span>
+                                <span class="song-number"><?php echo h($song['PlaylistMembership']['sort']); ?></span>
                             </td>
-                            <td class="truncated-name"><?php echo $song['Song']['title']; ?></td>
-                            <td class="truncated-name hidden-xs hidden-sm"><?php echo $song['Song']['artist']; ?></td>
-                            <td class="truncated-name visible-lg"><?php echo $song['Song']['album']; ?></td>
+                            <td class="truncated-name"><?php echo h($song['Song']['title']); ?></td>
+                            <td class="truncated-name hidden-xs hidden-sm"><?php echo h($song['Song']['artist']); ?></td>
+                            <td class="truncated-name visible-lg"><?php echo h($song['Song']['album']); ?></td>
                             <td class="text-right playtime-cell">
-                                <span class="song-playtime"><?php echo $song['Song']['playtime']; ?></span>
+                                <span class="song-playtime"><?php echo h($song['Song']['playtime']); ?></span>
                                 <span class="glyphicon glyphicon-play song-controls action-play" data-action="play" title="<?php echo __('Play'); ?>"></span><span class="glyphicon glyphicon-pause song-controls action-pause" data-action="pause" title="<?php echo __('Pause'); ?>"></span>
                                 <?php echo $this->Form->postLink(
                                         '<span class="glyphicon glyphicon-remove song-controls action-remove-from-playlist" title="'.__("Remove").'"></span>',
                                         array('controller' => 'playlist_memberships', 'action' => 'remove', $song['PlaylistMembership']['id']),
                                         array('style' => 'text-decoration: none;', 'escape' => false),
-                                        __('Remove').' '.$song['Song']['title'].' '.__('from the playlist?')
+                                        __('Remove').' '.h($song['Song']['title']).' '.__('from the playlist?')
                                 ); ?>
                             </td>
                         </tr>
@@ -138,8 +158,8 @@
 </div>
 
 <!-- Edit playlist modal -->
-<?php if(!empty($playlists)): ?>
-    <?php foreach($playlists as $id => $name): ?>
+<?php if (!empty($playlists)): ?>
+    <?php foreach ($playlists as $id => $name): ?>
         <div id="<?php echo 'edit-playlist-'.$id.'-modal'; ?>" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="editPlaylistModal" aria-hidden="true">
             <div class="modal-dialog">
                 <div class="modal-content">

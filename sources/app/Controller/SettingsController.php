@@ -16,15 +16,42 @@ class SettingsController extends AppController {
      * This function manages the Sonerezh settings panel.
      * It also calculates some statistics and checks if avconv command is available.
      */
-    public function index(){
+    public function index() {
 
         $this->loadModel('Song');
+        $this->Setting->contain('Rootpath');
 
         if ($this->request->is(array('POST', 'PUT'))) {
-            if ($this->Setting->save($this->request->data)) {
+
+            $rootpaths = array();
+            foreach ($this->request->data['Rootpath'] as $rootpath) {
+                if (isset($rootpath['id'])) {
+                    $rootpaths[] = $rootpath['id'];
+                }
+            }
+            $sessionRootpaths = $this->Session->check('rootpaths') ? $this->Session->read('rootpaths') : array();
+            $deleteRootpaths = array_diff($sessionRootpaths, $rootpaths);
+
+            if ($this->Setting->saveAssociated($this->request->data)) {
+
+                $this->Setting->Rootpath->deleteAll(array('Rootpath.id' => $deleteRootpaths));
+                $this->request->data = $this->Setting->find('first');
+                $this->_saveRootpathsInSession($this->request->data['Rootpath']);
                 $this->Session->setFlash(__('Settings saved !'), 'flash_success');
+
             } else {
                 $this->Session->setFlash(__('Unable to save settings!'), 'flash_error');
+            }
+        }
+
+        if (empty($this->request->data)) {
+            $this->request->data = $this->Setting->find('first');
+            $this->_saveRootpathsInSession($this->request->data['Rootpath']);
+        }
+        if (isset($this->request->data['Setting']['convert_from'])) {
+            $convert_from = explode(',', $this->request->data['Setting']['convert_from']);
+            foreach ($convert_from as $v) {
+                $this->request->data['Setting']['from_'.$v] = true;
             }
         }
 
@@ -44,38 +71,50 @@ class SettingsController extends AppController {
         $stats['thumbCache'] = 0;
 
         if (is_dir(RESIZED_DIR)) {
-            foreach (new RecursiveIteratorIterator(new RecursiveDirectoryIterator(RESIZED_DIR)) as $file) {
+            $recursiveResizedDirectoryIterator = new RecursiveDirectoryIterator(RESIZED_DIR);
+            $recursiveResizedIteratorIterator = new RecursiveIteratorIterator($recursiveResizedDirectoryIterator);
+
+            foreach ($recursiveResizedIteratorIterator as $file) {
                 $stats['thumbCache'] += $file->getSize();
             }
         }
 
-        // MP3 cache size
-        $stats['mp3Cache'] = 0;
-        foreach (new RegexIterator(new RecursiveIteratorIterator(new RecursiveDirectoryIterator(TMP)), '/^.+\.(mp3|ogg)$/i') as $mp3) {
-            $stats['mp3Cache'] += $mp3->getSize();
-        }
+        // Audio cache size
+        $stats['audioCache'] = 0;
+        $recursiveTmpDirectoryIterator = new RecursiveDirectoryIterator(TMP);
+        $recursiveTmpIteratorIterator = new RecursiveIteratorIterator($recursiveTmpDirectoryIterator);
+        $regexTmpIterator = new RegexIterator($recursiveTmpIteratorIterator, '/^.+\.(mp3|ogg)$/i');
 
-        // Check if avconv shell command is available
-        $cmd = shell_exec("which avconv");
-        $avconv = empty($cmd) ? false : true;
-
-        if (empty($this->request->data)) {
-            $this->request->data = $this->Setting->find('first');
-            $convert_from = explode(',', $this->request->data['Setting']['convert_from']);
-
-            foreach ($convert_from as $v) {
-                $this->request->data['Setting']['from_'.$v] = true;
+        foreach ($regexTmpIterator as $audio_file) {
+            if (!$audio_file->isLink()) {
+                $stats['audioCache'] += $audio_file->getSize();
             }
         }
 
-        $this->set(array('stats' => $stats, 'avconv' => $avconv));
+        // Check if avconv shell command is available
+        if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
+            $avconv = shell_exec("where avconv") || shell_exec("where ffmpeg");//WIN
+        } else {
+            $avconv = shell_exec("which avconv") || shell_exec("which ffmpeg");//NO WIN
+        }
+
+        $db = $this->Setting->getDataSource();
+        $db_source = explode('/', $db->config['datasource']);
+        $sonerezh_docker = ', ';
+        if (DOCKER) {
+            $sonerezh_docker = ' on Docker, ';
+        }
+
+        $stats['sonerezh_version'] = 'Sonerezh ' . SONEREZH_VERSION . $sonerezh_docker . $db_source[1];
+
+        $this->set(compact('stats', 'avconv'));
     }
 
     /**
      * This function clears the Sonerezh caches.
      * It deletes all the .(mp3|ogg) files in tmp/ and the thumbnails cache.
      */
-    public function clear(){
+    public function clear() {
         App::uses('Folder', 'Utility');
         App::uses('File', 'Utility');
         $this->loadModel('Song');
@@ -128,5 +167,14 @@ class SettingsController extends AppController {
             $this->Session->setFlash(__('Unable to clean the database!'), 'flash_error');
             return $this->redirect(array('action' => 'index'));
         }
+    }
+
+    protected function _saveRootpathsInSession($rootpaths) {
+        $rps = array();
+        foreach ($rootpaths as $rootpath) {
+            $rps[] = $rootpath['id'];
+        }
+        $this->Session->delete('rootpaths');
+        $this->Session->write('rootpaths', $rps);
     }
 }

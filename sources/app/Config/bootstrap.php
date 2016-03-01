@@ -107,9 +107,15 @@ CakeLog::config('error', array(
 ));
 
 /**
+ * Default application language
+ */
+Configure::write('Config.language', 'eng');
+
+/**
  * Sonerezh constants declarations
  */
-define('SONEREZH_VERSION', 'v0.9.0-beta');
-define('THUMBNAILS_DIR', 'thumbnails'.DS);
+define('SONEREZH_VERSION', 'v1.0.0');
+define('THUMBNAILS_DIR', 'thumbnails');
 define('RESIZED_DIR', IMAGES.'resized'.DS);
 define('AVATARS_DIR', 'avatars');
+define('DOCKER', false);

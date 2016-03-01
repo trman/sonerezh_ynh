@@ -1,6 +1,12 @@
 @font-face{
     font-family: 'Open Sans';
-    src: url('../fonts/OpenSans-Regular-webfont.woff') format('woff');
+    font-weight: normal;
+    src: url('../fonts/OpenSans-Regular.woff') format('woff');
+}
+@font-face{
+    font-family: 'Open Sans';
+    src: url('../fonts/OpenSans-Bold.woff') format('woff');
+    font-weight: bold;
 }
 
 body {
@@ -54,10 +60,19 @@ h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
 .navbar-inverse .navbar-nav>li>a {
     color: #fff;
 }
-.navbar-inverse .navbar-nav>.active>a, .navbar-inverse .navbar-nav>.active>a:hover, .navbar-inverse .navbar-nav>.active>a:focus{
-    background-color: transparent;
-}
 
+.navbar-inverse .navbar-header>a,
+.navbar-inverse .navbar-nav>li>a,
+.navbar-inverse .navbar-nav>.active>a,
+.navbar-inverse .navbar-nav>.active>a:focus {
+    background-color: transparent;
+    transition: background-color 0.2s;
+}
+.navbar-inverse .navbar-header>a:hover,
+.navbar-inverse .navbar-nav>li>a:hover,
+.navbar-inverse .navbar-nav>.active>a:hover {
+    background-color: #337AB7;
+}
 .navbar-inverse .navbar-nav>.active>a:after{
     content: " ";
     display: block;
@@ -97,6 +112,10 @@ nav .search .search-input{
     padding: 10px 15px;
 }
 
+.navbar-fixed-top .navbar-collapse {
+    max-height: unset;
+}
+
 /***
  * Player
  *********************************/
@@ -104,6 +123,8 @@ nav .search .search-input{
     margin-top: 50px;
     height: 65px;
     z-index: 1020;
+    border: none;
+    box-shadow: 0 2px 4px 0 rgba(0,0,0,.15);
 }
 
 ul.player-controls a {
@@ -183,13 +204,14 @@ ul.player-controls li.play{
 }
 .navbar-player .song-cover{
     float: left;
-    width: 64px;
-    height: 64px;
+    width: 65px;
+    height: 65px;
     margin-right: 10px;
 }
 
 .badge-timer{
     background-color: #428BCA;
+    font-weight: normal;
 }
 
 .queue {
@@ -252,10 +274,31 @@ body, body.modal-open {
 /***
  * Generics classes
  *********************************/
-.track-number{
-    width: 25px;
-    line-height:1;
+
+.table>tbody>tr>td, .table>thead>tr>th {
+    padding: 15px 5px;
+}
+
+.table-album>tbody>tr>td, .table-album>thead>tr>th {
+    padding: 8px 5px;
+}
+
+.table>thead>tr>th {
+    font-size: 95%;
+    text-transform: uppercase;
+}
+
+ tr[data-id]{
+ 	cursor: pointer;
+ }
+
+.table>tbody>tr>td.track-number{
+    width: 35px;
     color:#999;
+    padding-left: 15px;
+}
+.table>thead>tr>th.track-number {
+    padding-left: 15px;
 }
 
 .truncated-name {
@@ -285,8 +328,24 @@ body, body.modal-open {
     width: 55px;
 }
 
+#album-expended .table>tbody>tr:hover {
+    background-color: #282828;
+}
+
+.table>tbody>tr.on-air,.table>tbody>tr.on-air:hover {
+    background-color: #fafafa;
+}
+
+#album-expended .table>tbody>tr.on-air, #album-expended .table>tbody>tr.on-air:hover {
+    background-color: #2D2D2D;
+}
+
 .on-air td {
     font-weight: bold;
+}
+
+.on-air td.track-number {
+    font-weight: normal;
 }
 
 .on-air td.playtime-cell .song-playtime,
@@ -318,6 +377,7 @@ body, body.modal-open {
 .input-group .selecter.open .selecter-selected {
     border-top-right-radius: 0;
 }
+
 /***
  * Artists view
  *********************************/
@@ -337,6 +397,7 @@ body, body.modal-open {
 
 .disc-number{
 	margin: 10px 0;
+    text-transform: uppercase;
 }
 
 .cover{
@@ -473,6 +534,10 @@ table tbody tr:hover td span.action-remove-from-playlist{
 
 #quality-slider{
     margin-top: 7px;
+}
+
+.rootpath{
+    margin-bottom: 10px;
 }
 
 

@@ -20,6 +20,7 @@
  */
 
 App::uses('Controller', 'Controller');
+App::uses('BlowfishPasswordHasher', 'Controller/Component/Auth');
 
 /**
  * Application Controller
@@ -35,6 +36,11 @@ class AppController extends Controller {
     public $helpers = array('Session', 'Form' => array('className' => 'BootstrapForm'), 'Html' => array('className' => 'AjaxHtml'), 'Image');
     public $components = array(
         'Session',
+        'Cookie' => array(
+            'name' => 'SonerezhCookie',
+            'time' => '7 Days',
+            'httpOnly' => true
+        ),
         'DebugKit.Toolbar',
         'Image',
         'Paginator',
@@ -59,11 +65,38 @@ class AppController extends Controller {
             $this->response->type("application/json");
             $this->layout = "ajax";
         } elseif ($this->request->params['controller'] != 'installers' && !$this->__isInstalled()) {
-            $this->redirect(array('controller' => 'installers', 'action' => 'index'));
+            if (DOCKER) {
+                $this->redirect(array('controller' => 'installers', 'action' => 'docker'));
+            } else {
+                $this->redirect(array('controller' => 'installers', 'action' => 'index'));
+            }
         } elseif ($this->request->params['controller'] == 'installers' && $this->__isInstalled()) {
             $this->Session->setFlash(__('Sonerezh is already installed. Remove or rename app/Config/database.php to run the installation again.'), 'flash_info');
             $this->redirect(array('controller' => 'songs', 'action' => 'index'));
         }
+
+        if ($this->__isInstalled() && !$this->Auth->user() && $this->Cookie->check('auth')) {
+            $this->loadModel('User');
+            $cookie = $this->Cookie->read('auth');
+            $authCookie = explode(':', $cookie);
+            $user = $this->User->find('first', array('conditions' => array('id' => $authCookie[0])));
+            $passwordHasher = new BlowfishPasswordHasher();
+            if ($passwordHasher->check($user['User']['email'], $authCookie[1]) && $passwordHasher->check($user['User']['password'], $authCookie[2])) {
+                unset($user['User']['password']);
+                $this->Auth->login($user['User']);
+                $this->Cookie->write('auth', $this->Cookie->read('auth'));
+            } else {
+                $this->Cookie->delete('auth');
+            }
+        }
+
+        if (!$this->request->is('ajax') && $this->Auth->user()) {
+            $this->loadModel('Setting');
+            $setting = $this->Setting->find('first', array('fields' => array('sync_token')));
+            $this->set('sync_token', $setting['Setting']['sync_token']);
+        }
+
+        $this->__setLanguage();
     }
 
     public function beforeRender() {
@@ -74,7 +107,7 @@ class AppController extends Controller {
     }
 
     public function redirect($url, $status = null, $exit = true) {
-        if($url == null && $status == 403 && $this->request->is('ajax')){
+        if ($url == null && $status == 403 && $this->request->is('ajax')) {
             $url = $this->Auth->loginAction;
         }
         parent::redirect($url, $status, $exit);
@@ -84,7 +117,7 @@ class AppController extends Controller {
      * This function checks if Sonerezh is already installed on the server
      * @return bool
      */
-    private function __isInstalled(){
+    private function __isInstalled() {
         $installed = true;
 
         if (!file_exists(APP."Config".DS."database.php")) {
@@ -100,7 +133,46 @@ class AppController extends Controller {
             }
         }
 
+        // The docker image is packaged with database files
+        // So we check if there is at least one admin user in the db
+        if (DOCKER && $installed) {
+            try {
+                $this->loadModel('User');
+                $admins = $this->User->find('count', array(
+                    'conditions' => array('role' => 'admin')
+                ));
+                if ($admins < 1) {
+                    $installed = false;
+                }
+            } catch (Exception $connectionError) {
+                $installed = false;
+            }
+        }
         return $installed;
     }
 
+    /**
+     * This function set the application language according to the browser language and saves it to a cookie
+     */
+    private function __setLanguage() {
+        // Check if the cookie is already set
+        if ($this->Cookie->read('lang')) {
+            Configure::write('Config.language', $this->Cookie->read('lang'));
+            return;
+        }
+
+        // Get browser language
+        $browser_lang = substr(($_SERVER['HTTP_ACCEPT_LANGUAGE']), 0, 2);
+        switch ($browser_lang) {
+            case 'fr':
+                $locale = 'fra';
+                break;
+            default:
+                $locale = 'eng';
+                break;
+        }
+
+        $this->Cookie->write('lang', $locale);
+        Configure::write('Config.language', $locale);
+    }
 }
