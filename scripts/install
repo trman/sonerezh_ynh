@@ -4,22 +4,20 @@
 app=sonerezh
 domain=$1
 url_path=$2
+#admin=$3
+#is_public=$4
+
+# Save app settings
+#sudo yunohost app setting $app admin -v "$admin"
+#sudo yunohost app setting $app is_public -v "$is_public"
 
 # Check domain/path availability
-sudo yunohost app checkurl $domain$url_path -a $app
-if [[ ! $? -eq 0 ]]; then
-    exit 1
-fi
+sudo yunohost app checkurl $domain$url_path -a $app \
+	|| (echo "Path not available: $domain$url_path" && exit 1)
 
-# Generate random DES key & password
-deskey=$(dd if=/dev/urandom bs=1 count=200 2> /dev/null | tr -c -d '[A-Za-z0-9]' | sed -n 's/\(.\{24\}\).*/\1/p')
-db_pwd=$(dd if=/dev/urandom bs=1 count=200 2> /dev/null | tr -c -d '[A-Za-z0-9]' | sed -n 's/\(.\{24\}\).*/\1/p')
-
-# Use 'sonerezh' as database name and user
-db_user=$app
-
-# Initialize database and store mysql password for upgrade
-sudo yunohost app initdb $db_user -p $db_pwd -s $(readlink -e ../sources/SQL/mysql.initial.sql)
+# Initiate MySQL database
+db_pwd=$(openssl rand -hex 15)
+sudo yunohost app initdb $app -p $db_pwd
 sudo yunohost app setting $app mysqlpwd -v $db_pwd
 
 # Copy files to the right place
@@ -38,12 +36,23 @@ sudo mkdir -p $data_path
 # Modify Nginx configuration file and copy it to Nginx conf directory
 sed -i "s@YNH_WWW_PATH@$url_path@g" ../conf/nginx.conf
 sed -i "s@YNH_WWW_ALIAS@$src_path/app/webroot@g" ../conf/nginx.conf
+sudo sed -i "s@YNH_WWW_APP@$app@g" ../conf/nginx.conf
 sudo cp ../conf/nginx.conf /etc/nginx/conf.d/$domain.d/$app.conf
 
 # Modify PHP configuration file and coyp it to PHP conf directory
+php_conf=/etc/php5/fpm/pool.d/$app.conf
 sed -i "s@YNH_WWW_PATH@$url_path@g" ../conf/php-fpm.conf
 sed -i "s@YNH_WWW_ALIAS@$src_path/app/webroot@g" ../conf/php-fpm.conf
-sudo cp ../conf/php-fpm.conf /etc/php5/fpm/pool.d/$app.conf
+sudo cp ../conf/php-fpm.conf $php_conf
+sudo chown root: $php_conf
+sudo chmod 644 $php_conf
+
+# If app is public, add url to SSOWat conf as skipped_uris
+#if [ "$is_public" = "Yes" ];
+#then
+  # unprotected_uris allows SSO credentials to be passed anyway.
+#    sudo yunohost app setting $app unprotected_uris -v "/"
+#fi
 
 # Reload Nginx and PHP conf
 sudo service nginx reload
