@@ -20,7 +20,10 @@ db_pwd=$(openssl rand -hex 15)
 sudo yunohost app initdb $app -p $db_pwd
 sudo yunohost app setting $app mysqlpwd -v $db_pwd
 
-# Copy files to the right place
+# Install dependency to convert tracks to a readable format for the browser
+#sudo apt-get install libav-tools
+
+# Copy sources to the web directory
 src_path=/var/www/sonerezh
 sudo mkdir -p $src_path
 sudo cp -a ../sources/. $src_path
