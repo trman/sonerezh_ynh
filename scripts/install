@@ -36,11 +36,13 @@ data_path=/home/yunohost.app/sonerezh/data
 sudo mkdir -p $data_path
 
 # Modify Nginx configuration file and copy it to Nginx conf directory
-sed -i "s@PATHTOCHANGE@$url_path@g" ../conf/nginx.conf
-sed -i "s@ALIASTOCHANGE@$src_path/@g" ../conf/nginx.conf
+sed -i "s@YNH_WWW_PATH@$url_path@g" ../conf/nginx.conf
+sed -i "s@YNH_WWW_ALIAS@$src_path/app/webroot@g" ../conf/nginx.conf
 sudo cp ../conf/nginx.conf /etc/nginx/conf.d/$domain.d/$app.conf
 
-# Configure PHP configuration
+# Modify PHP configuration file and coyp it to PHP conf directory
+sed -i "s@YNH_WWW_PATH@$url_path@g" ../conf/php-fpm.conf
+sed -i "s@YNH_WWW_ALIAS@$src_path/app/webroot@g" ../conf/php-fpm.conf
 sudo cp ../conf/php-fpm.conf /etc/php5/fpm/pool.d/$app.conf
 
 # Reload Nginx and PHP conf
