@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Retrieve arguments
-app=sonenezh
+app=sonerezh
 domain=$(sudo yunohost app setting $app domain)
 path=$(sudo yunohost app setting $app path)
 #admin=$(sudo yunohost app setting $app admin)
