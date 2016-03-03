@@ -6,10 +6,12 @@ domain=$1
 url_path=$2
 #admin=$3
 #is_public=$4
+music_path=/home/yunohost.app/sonerezh
 
 # Save app settings
 #sudo yunohost app setting $app admin -v "$admin"
 #sudo yunohost app setting $app is_public -v "$is_public"
+sudo yunohost app setting $app music_path -v "$music_path"
 
 # Check domain/path availability
 sudo yunohost app checkurl $domain$url_path -a $app \
@@ -33,8 +35,7 @@ sudo chown -R www-data: $src_path
 sudo chmod -R 775 $src_path
 
 # Configure data repository
-data_path=/home/yunohost.app/sonerezh/data
-sudo mkdir -p $data_path
+sudo mkdir -p $music_path
 
 # Modify Nginx configuration file and copy it to Nginx conf directory
 sed -i "s@YNH_WWW_PATH@$url_path@g" ../conf/nginx.conf
