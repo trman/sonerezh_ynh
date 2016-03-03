@@ -1,2 +1,4 @@
 # Sonerezh package for YunoHost
-Sorenezh package for YunoHost
+
+* [Sonerezh website](https://www.sonerezh.bzh/)
+* [YunoHost website](https://yunohost.org/)
