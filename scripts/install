@@ -4,12 +4,19 @@
 app=sonerezh
 domain=$1
 url_path=$2
-#is_public=$4
+email_auth=$3
+password=$4
+#is_public=$5
 music_path=/home/yunohost.app/sonerezh
 
 # Save app settings
 #sudo yunohost app setting $app is_public -v "$is_public"
 sudo yunohost app setting $app music_path -v "$music_path"
+
+# Check password length
+if [ ${#password} -ge 8 ]; then echo "good password length"
+else echo "password length must be ≥ 8 characters." && exit 1
+fi
 
 # Check domain/path availability
 sudo yunohost app checkurl $domain$url_path -a $app \
