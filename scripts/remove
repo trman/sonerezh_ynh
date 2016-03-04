@@ -3,7 +3,7 @@
 # Retrieve arguments
 app=sonerezh
 domain=$(sudo yunohost app setting $app domain)
-url_path=$(sudo yunohost app setting $app url_path)
+url_path=$(sudo yunohost app setting $app path)
 #is_public=$(sudo yunohost app setting $app is_public)
 music_path=$(sudo yunohost app setting $app music_path)
 

@@ -44,7 +44,6 @@ sudo mkdir -p $music_path
 
 # Remove slash
 url_path=$(echo "$url_path" | cut -b 2-)
-echo $url_path
 
 # Modify Nginx configuration file and copy it to Nginx conf directory
 sed -i "s@YNH_WWW_PATH@$url_path@g" ../conf/nginx.conf
