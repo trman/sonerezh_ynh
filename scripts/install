@@ -20,37 +20,32 @@ fi
 sudo yunohost app checkurl $domain$url_path -a $app \
 	|| (echo "Path not available: $domain$url_path" && exit 1)
 
+# Install dependency to convert tracks to a readable format for the browser
+sudo apt-get -y -qq install libav-tools
+
+# Create music repository
+sudo mkdir -p $music_path
+
+# Install sources
+src_path=/var/www/sonerezh
+sudo mkdir -p $src_path
+sudo cp -a ../sources/. $src_path
+sudo chown -R www-data: $src_path
+sudo chmod -R 775 $src_path
+
 # Initiate MySQL database
 db_pwd=$(openssl rand -hex 15)
 sudo yunohost app initdb $app -p $db_pwd
 sudo yunohost app setting $app mysqlpwd -v $db_pwd
 
-# Install dependency to convert tracks to a readable format for the browser
-sudo apt-get -y -qq install libav-tools
-
-# Copy sources to the web directory
-src_path=/var/www/sonerezh
-sudo mkdir -p $src_path
-sudo cp -a ../sources/. $src_path
-
-# Set permissions to sonerezh directory
-sudo chown -R www-data: $src_path
-sudo chmod -R 775 $src_path
-
-# Configure data repository
-sudo mkdir -p $music_path
-
-# Remove slash
-#url_path=$(echo "$url_path" | cut -b 2-)
+# Configure Nginx
 nginxconf=../conf/nginx-subpath.conf
-
-# Modify Nginx configuration file and copy it to Nginx conf directory
 sed -i "s@YNH_WWW_PATH@$url_path@g" $nginxconf
 sed -i "s@YNH_WWW_ALIAS@$src_path/app/webroot@g" $nginxconf
 sed -i "s@YNH_WWW_APP@$app@g" $nginxconf
 sudo cp $nginxconf /etc/nginx/conf.d/$domain.d/$app.conf
 
-# Modify PHP configuration file and coyp it to PHP conf directory
+# Configure PHP
 php_conf=/etc/php5/fpm/pool.d/$app.conf
 sed -i "s@YNH_WWW_ALIAS@$app/app/webroot@g" ../conf/php-fpm.conf
 sed -i "s@YNH_WWW_APP@$app@g" ../conf/php-fpm.conf
