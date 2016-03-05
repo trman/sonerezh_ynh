@@ -83,4 +83,4 @@ sleep 1 && curl -k \
 https://$domain$url_path/install
 
 # Remove alias line from hosts file
-sudo sed -i '/# $app/d' /etc/hosts
+sudo sed -i "/# $app/d" /etc/hosts
