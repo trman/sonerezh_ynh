@@ -15,6 +15,11 @@ sudo yunohost app setting $app music_path -v "$music_path"
 if [ ! ${#password} -ge 8 ]; then echo "password length must be ≥ 8 characters." && exit 1
 fi
 
+# Check url path is not root
+if [[ $url_path == "/" ]]; then
+echo "Currently Sonerezh can only be installed on a subpath domain" && exit 1
+fi
+
 # Check domain/path availability
 sudo yunohost app checkurl $domain$url_path -a $app \
 	|| (echo "Path not available: $domain$url_path" && exit 1)
