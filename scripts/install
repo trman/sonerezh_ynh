@@ -43,13 +43,14 @@ sudo chmod -R 775 $src_path
 sudo mkdir -p $music_path
 
 # Remove slash
-url_path=$(echo "$url_path" | cut -b 2-)
+#url_path=$(echo "$url_path" | cut -b 2-)
+nginxconf=../conf/nginx-subpath.conf
 
 # Modify Nginx configuration file and copy it to Nginx conf directory
-sed -i "s@YNH_WWW_PATH@$url_path@g" ../conf/nginx.conf
-sed -i "s@YNH_WWW_ALIAS@$src_path/app/webroot@g" ../conf/nginx.conf
-sed -i "s@YNH_WWW_APP@$app@g" ../conf/nginx.conf
-sudo cp ../conf/nginx.conf /etc/nginx/conf.d/$domain.d/$app.conf
+sed -i "s@YNH_WWW_PATH@$url_path@g" $nginxconf
+sed -i "s@YNH_WWW_ALIAS@$src_path/app/webroot@g" $nginxconf
+sed -i "s@YNH_WWW_APP@$app@g" $nginxconf
+sudo cp $nginxconf /etc/nginx/conf.d/$domain.d/$app.conf
 
 # Modify PHP configuration file and coyp it to PHP conf directory
 php_conf=/etc/php5/fpm/pool.d/$app.conf
