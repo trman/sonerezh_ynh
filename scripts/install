@@ -54,7 +54,28 @@ sudo chmod 644 $php_conf
 
 # Set app public
 sudo yunohost app setting $app unprotected_uris -v "/"
+sudo yunohost app ssowatconf
 
 # Reload Nginx and PHP conf
 sudo service nginx reload
 sudo service php5-fpm reload
+
+# Add alias line in hosts file
+echo "127.0.0.1 $domain # $app" | sudo tee -a /etc/hosts
+
+# Postinstall on web interface
+sleep 1 && curl -k \
+-d "data[DB][datasource]=MySQL" \
+-d "data[DB][host]=localhost" \
+-d "data[DB][database]=$app" \
+-d "data[DB][login]=$app" \
+-d "data[DB][password]=$db_pwd" \
+-d "data[DB][prefix]=$app_" \
+-d "data[User][email]=$email_auth"
+-d "data[User][password]=$password" \
+-d "data[User][confirm_password]=$password" \
+-d "[Setting][Rootpath][0][rootpath]=$music_path" \
+https://$domain$url_path/install
+
+# Remove alias line from hosts file
+sudo sed -i '/# $app/d' /etc/hosts
