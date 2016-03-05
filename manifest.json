@@ -2,8 +2,8 @@
     "name": "Sonerezh",
     "id": "sonerezh",
     "description": {
-        "en": "A self-hosted, web-based application for stream your music, everywhere.",
-        "fr": "Application web pour écouter en streaming sa musique partout."
+        "en": "Self-hosted, web-based application to stream music, everywhere.",
+        "fr": "Application web pour écouter en streaming de la musique partout."
     },
     "url": "https://www.sonerezh.bzh/",
     "license": "free",
