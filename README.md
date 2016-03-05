@@ -2,3 +2,5 @@
 
 * [Sonerezh website](https://www.sonerezh.bzh/)
 * [YunoHost website](https://yunohost.org/)
+
+![Sonerezh screenshots](sonerezh_screenshots.png)
