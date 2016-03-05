@@ -12,8 +12,7 @@ music_path=/home/yunohost.app/sonerezh
 sudo yunohost app setting $app music_path -v "$music_path"
 
 # Check password length
-if [ ${#password} -ge 8 ]; then echo "good password length"
-else echo "password length must be ≥ 8 characters." && exit 1
+if [ ! ${#password} -ge 8 ]; then echo "password length must be ≥ 8 characters." && exit 1
 fi
 
 # Check domain/path availability
