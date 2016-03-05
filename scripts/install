@@ -75,8 +75,8 @@ sleep 1 && curl -k \
 -d "data[DB][database]=$app" \
 -d "data[DB][login]=$app" \
 -d "data[DB][password]=$db_pwd" \
--d "data[DB][prefix]=$app_" \
--d "data[User][email]=$email_auth"
+-d "data[DB][prefix]="$app"_" \
+-d "data[User][email]=$email_auth" \
 -d "data[User][password]=$password" \
 -d "data[User][confirm_password]=$password" \
 -d "[Setting][Rootpath][0][rootpath]=$music_path" \
