@@ -12,7 +12,10 @@ There is [an issue](https://github.com/YunoHost-Apps/sonerezh_ynh/issues/1) to s
 
 You will have to go to `/sonerezh/install/` and put this parameters:
 
-- Database password is: `sonerezh`.
+- Retrieve database password:
+```bash
+sudo cat /etc/yunohost/apps/sonerezh/settings.yml | grep mysql
+```
 - Put your email and password to create an account.
 
 ![Postinstall](postinstall.png)
