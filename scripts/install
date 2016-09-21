@@ -31,10 +31,10 @@ sudo apt-get -y -qq install libav-tools
 sudo mkdir -p $music_path
 
 # Fetch and install sources
-sudo wget --quiet https://github.com/Sonerezh/sonerezh/archive/1.1.0.tar.gz --output-document=/tmp/$app.tar.gz
+sudo wget --quiet https://github.com/Sonerezh/sonerezh/archive/1.1.1.tar.gz --output-document=/tmp/$app.tar.gz
 src_path=/var/www/sonerezh
 sudo mkdir -p $src_path
-sudo tar zxf /tmp/$app.tar.gz -C /var/www --transform 's/sonerezh-1.1.0/sonerezh/'
+sudo tar zxf /tmp/$app.tar.gz -C /var/www --transform 's/sonerezh-1.1.1/sonerezh/'
 sudo chown -R www-data: $src_path
 sudo chmod -R 775 $src_path
 
