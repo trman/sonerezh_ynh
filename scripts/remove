@@ -1,10 +1,13 @@
 #!/bin/bash
 
+# Source YunoHost helpers
+source /usr/share/yunohost/helpers
+
 # Retrieve arguments
-app=sonerezh
-domain=$(sudo yunohost app setting $app domain)
-url_path=$(sudo yunohost app setting $app path)
-music_path=$(sudo yunohost app setting $app music_path)
+app=$YNH_APP_INSTANCE_NAME
+domain=$(ynh_app_setting_get $app domain)
+url_path=$(ynh_app_setting_get $app path)
+music_path=$(ynh_app_setting_get $app music_path)
 
 # Remove sources
 sudo rm -rf /var/www/$app
