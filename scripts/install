@@ -1,28 +1,31 @@
 #!/bin/bash
 
 # Retrieve arguments
-app=sonerezh
-domain=$1
-url_path=$2
-email_auth=$3
-password=$4
-music_path=/home/yunohost.app/sonerezh
+app=$YNH_APP_INSTANCE_NAME
+domain=$YNH_APP_ARG_DOMAIN
+url_path=$YNH_APP_ARG_URL_PATH
+email_auth=$YNH_APP_ARG_EMAIL_AUTH
+password=$YNH_APP_ARG_PASSWORD
+music_path="/home/yunohost.app/sonerezh"
+
+# Source YunoHost helpers
+source /usr/share/yunohost/helpers
 
 # Save app settings
-sudo yunohost app setting $app music_path -v "$music_path"
+ynh_app_setting_set "$app" music_path "$music_path"
 
 # Check password length
-if [ ! ${#password} -ge 8 ]; then echo "password length must be ≥ 8 characters." && exit 1
+if [ ! ${#password} -ge 8 ]; then ynh_die "password length must be ≥ 8 characters."
 fi
 
 # Check url path is not root
 if [[ $url_path == "/" ]]; then
-echo "Currently Sonerezh can only be installed on a subpath domain" && exit 1
+ynh_die "Currently Sonerezh can only be installed on a subpath domain"
 fi
 
 # Check domain/path availability
 sudo yunohost app checkurl $domain$url_path -a $app \
-	|| (echo "Path not available: $domain$url_path" && exit 1)
+	|| ynh_die "Path not available: $domain$url_path"
 
 # Install dependency to convert tracks to a readable format for the browser
 sudo apt-get -y -qq install libav-tools
@@ -41,7 +44,7 @@ sudo chmod -R 775 $src_path
 # Initiate MySQL database
 db_pwd=$(openssl rand -hex 15)
 sudo yunohost app initdb $app -p $db_pwd
-sudo yunohost app setting $app mysqlpwd -v $db_pwd
+ynh_app_setting_set "$app" mysqlpwd "$db_pwd"
 
 # Configure Nginx
 nginxconf=../conf/nginx-subpath.conf
@@ -59,7 +62,7 @@ sudo chown root: $php_conf
 sudo chmod 644 $php_conf
 
 # Set app public
-sudo yunohost app setting $app unprotected_uris -v "/"
+ynh_app_setting_set "$app" unprotected_uris "/"
 sudo yunohost app ssowatconf
 
 # Reload Nginx and PHP conf
