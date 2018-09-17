@@ -45,7 +45,7 @@ sudo chown -R www-data: $src_path
 sudo chmod -R 775 $src_path
 
 # Initiate MySQL database
-db_pwd=$(openssl rand -hex 15)
+db_pwd=$(ynh_string_random 24)
 sudo yunohost app initdb $app -p $db_pwd
 ynh_app_setting_set "$app" mysqlpwd "$db_pwd"
 
